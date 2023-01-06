@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def f1(theta1,theta2,theta_star):
-    return torch.sqrt((theta1 - theta_star[0])**2 + (theta2-theta_star[1])**2)
+    return torch.sqrt((theta1 - theta_star[0])**2 + (theta2-theta_star[1])**2)**2
 
 def f(theta,theta_star):
     return torch.linalg.norm(theta-theta_star,ord=2)
@@ -18,13 +18,13 @@ def Toy2DExperiment(theta_init,theta_star,a,b,c,gamma=.1):
     def dynamic_barrier_gradient_descent(alpha,beta):
         thetas = [theta_init]
         theta = thetas[0]
-        for i in range(100):
+        for i in range(200):
             grad_f = grad(f(theta,theta_star),theta)[0]
             grad_g = grad(g(theta,a,b),theta)[0]
 
-            phi = min(alpha * (g(theta,a,b)-c),beta * torch.linalg.norm(grad_g,ord=2))
+            phi = min(alpha * (g(theta,a,b)-c),beta * torch.linalg.norm(grad_g,ord=2)**2)
 
-            lam = max(0,(phi-torch.dot(grad_f,grad_g))/torch.linalg.norm(grad_g,ord=2))
+            lam = max(0,(phi-torch.dot(grad_f,grad_g))/torch.linalg.norm(grad_g,ord=2)**2)
 
             delta = grad_f+lam*grad_g
 
@@ -47,7 +47,8 @@ def Toy2DExperiment(theta_init,theta_star,a,b,c,gamma=.1):
     ax = fig.add_subplot(111)
 
     # Add the halfspace to the plot
-    cs = ax.contour(X1, X2, Z2, levels=[0],colors=['b'])
+    # cs = ax.contour(X1, X2, Z2, levels=[0],colors=['b'])
+    ax.fill_between(X1.flatten(), X2.flatten(), c, where=Z2.flatten() <= c, color='b', alpha=0.1)
     
     # Add the contour plot of f
     contours = plt.contour(X1, X2, Z1, 20)
@@ -73,14 +74,13 @@ def Toy2DExperiment(theta_init,theta_star,a,b,c,gamma=.1):
     Z1 = f1(X1,X2,theta_star)
 
     # Compute the halfspace
-    Z2 = (c - a[0]*X1 - a[1]*X2 - b)
-    
+    Z2 = (a[0]*X1 + a[1]*X2 + b)
     
     fig = plt.figure(figsize=(10, 7))
     ax = fig.add_subplot(111)
 
     # Add the halfspace to the plot
-    cs = ax.contour(X1, X2, Z2, levels=[0],colors=['b'])
+    ax.fill_between(X1.flatten(), X2.flatten(), c, where=Z2.flatten() <= c, color='b', alpha=0.1)
     
     # Add the contour plot of f
     contours = plt.contour(X1, X2, Z1, 20)
@@ -99,24 +99,8 @@ def Toy2DExperiment(theta_init,theta_star,a,b,c,gamma=.1):
     plt.legend(loc="lower left")
     plt.savefig('experiment_1b')
     #######################
-    # Experiment 1d
-    def dynamic_barrier_gradient_descent_with_optimizer():
-        thetas = [theta_init]
-        theta = thetas[0]
-        for i in range(100):
-            grad_f = grad(f(theta,theta_star),theta)[0]
-            grad_g = grad(g(theta,a,b),theta)[0]
-
-            phi = min(alpha * (g(theta,a,b)-c),beta * torch.linalg.norm(grad_g,ord=2))
-
-            lam = max(0,(phi-torch.dot(grad_f,grad_g))/torch.linalg.norm(grad_g,ord=2))
-
-            delta = grad_f+lam*grad_g
-
-            theta = theta - gamma * delta
-            thetas.append(theta)
-        return thetas
-
+    # Experiment 1c
+    
 
 
 
@@ -124,6 +108,8 @@ def Toy2DExperiment(theta_init,theta_star,a,b,c,gamma=.1):
 torch.manual_seed(993)
 
 theta = torch.randn(2,requires_grad=True)-1
+
+
 theta_star = torch.randn(2)
 
 a = torch.randn(2)
