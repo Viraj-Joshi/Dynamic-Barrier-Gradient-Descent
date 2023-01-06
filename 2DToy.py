@@ -3,6 +3,12 @@ from torch.autograd import grad
 import matplotlib.pyplot as plt
 import numpy as np
 
+"""
+This file replicates the experiments in Section 8.1 of the Supplemental Material
+f(\theta) = ||\theta - \theta^*||^2 and g(\theta)=||a^T \theta + b||^2
+where \theta,\theta^*,a are in R^2 and b in R 
+"""
+
 def f1(theta1,theta2,theta_star):
     return torch.sqrt((theta1 - theta_star[0])**2 + (theta2-theta_star[1])**2)**2
 
@@ -35,7 +41,7 @@ def Toy2DExperiment(theta_init,theta_star,a,b,c,gamma=.1):
         return thetas
 
     # Experiment 1a
-    x = torch.linspace(-3, 3, 100)
+    x = torch.linspace(-3, 3, 200)
     X1, X2 = torch.meshgrid(x, x)
     Z1 = f1(X1,X2,theta_star)
 
@@ -47,7 +53,6 @@ def Toy2DExperiment(theta_init,theta_star,a,b,c,gamma=.1):
     ax = fig.add_subplot(111)
 
     # Add the halfspace to the plot
-    # cs = ax.contour(X1, X2, Z2, levels=[0],colors=['b'])
     ax.fill_between(X1.flatten(), X2.flatten(), c, where=Z2.flatten() <= c, color='b', alpha=0.1)
     
     # Add the contour plot of f
