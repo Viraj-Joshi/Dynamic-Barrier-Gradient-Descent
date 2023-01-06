@@ -40,7 +40,7 @@ def Toy2DExperiment(theta_init,theta_star,a,b,c,gamma=.1):
     Z1 = f1(X1,X2,theta_star)
 
     # Compute the halfspace
-    Z2 = (c - a[0]*X1 - a[1]*X2 - b)
+    Z2 = a[0]*X1 + a[1]*X2 + b
     
     
     fig = plt.figure(figsize=(10, 7))
@@ -69,13 +69,7 @@ def Toy2DExperiment(theta_init,theta_star,a,b,c,gamma=.1):
 
     ############################
     # Experiment 1b
-    x = torch.linspace(-3, 3, 100)
-    X1, X2 = torch.meshgrid(x, x)
-    Z1 = f1(X1,X2,theta_star)
 
-    # Compute the halfspace
-    Z2 = (a[0]*X1 + a[1]*X2 + b)
-    
     fig = plt.figure(figsize=(10, 7))
     ax = fig.add_subplot(111)
 
@@ -99,7 +93,33 @@ def Toy2DExperiment(theta_init,theta_star,a,b,c,gamma=.1):
     plt.legend(loc="lower left")
     plt.savefig('experiment_1b')
     #######################
-    # Experiment 1c
+    # Experiment 1c - Lexicographic Optimization
+    # the minimum of g(theta) is zero=> c = g* = 0
+
+    c = 0    
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111)
+
+    # Add the halfspace to the plot
+    ax.fill_between(X1.flatten(), X2.flatten(), c, where=Z2.flatten() <= c, color='b', alpha=0.1)
+    
+    # Add the contour plot of f
+    contours = plt.contour(X1, X2, Z1, 20)
+
+    # Add labels and title
+    plt.clabel(contours, inline=True, fontsize=10)
+    plt.xlabel('x1', fontsize=11)
+    plt.ylabel('x2', fontsize=11)
+    plt.title(f'2D lexicographic optimization varying beta with beta=1')
+
+    for alpha in alphas:
+        thetas = dynamic_barrier_gradient_descent(alpha,1)
+        plt.plot([theta[0].item() for theta in thetas], [theta[1].item() for theta in thetas],'--',label=f"alpha={alpha}")
+    plt.plot(theta_star[0],theta_star[1],'*')
+    plt.colorbar()
+    plt.legend(loc="lower left")
+    plt.savefig('experiment_1c')
+
     
 
 
